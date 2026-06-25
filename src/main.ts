@@ -76,8 +76,8 @@ const t = (k: string) => I18N[lang][k] ?? k;
 
 const $ = (id: string) => document.getElementById(id)!;
 const appWindow = getCurrentWindow();
-const FULL = { w: 600, h: 440 };
-const COMPACT = { w: 360, h: 168 };
+const FULL = { w: 900, h: 700 };
+const COMPACT = { w: 640, h: 300 };
 
 let lastUsage: UsageSnapshot | null = null;
 let lastCost: CostReport | null = null;

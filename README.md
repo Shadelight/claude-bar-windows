@@ -1,3 +1,5 @@
+![Claude Bar](docs/panel.png)
+
 # Claude Bar for Windows
 
 > Keep your **Claude Code** usage in your Windows tray — session limit, weekly limit, and cost, always one click away.
