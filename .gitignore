@@ -1,0 +1,22 @@
+# Frontend / Node
+node_modules/
+dist/
+
+# Rust / Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# Imagen fuente del icono (los iconos generados en src-tauri/icons sí se versionan)
+src-tauri/app-icon.png
+
+# Capturas con datos reales de la cuenta (regenerar limpias antes de publicar)
+docs/panel.png
+
+# Binarios compilados (se publican en Releases, no en el repo)
+/Claude Bar.exe
+*.exe
+
+# Sistema / logs
+*.log
+.DS_Store
+Thumbs.db
