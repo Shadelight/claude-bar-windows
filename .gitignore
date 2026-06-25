@@ -3,8 +3,15 @@ node_modules/
 dist/
 
 # Rust / Tauri
+target/
 src-tauri/target/
 src-tauri/gen/
+
+# Entorno / secretos (nunca subir tokens ni credenciales)
+.env
+.env.local
+.credentials.json
+*.credentials.json
 
 # Imagen fuente del icono (los iconos generados en src-tauri/icons sí se versionan)
 src-tauri/app-icon.png

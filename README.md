@@ -1,6 +1,6 @@
-# Claude Bar
+# Claude Bar for Windows
 
-> Keep your **Claude** subscription usage in your Windows tray — session limit, weekly limit, and cost, always one click away.
+> Keep your **Claude Code** usage in your Windows tray — session limit, weekly limit, and cost, always one click away.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Platform: Windows 10/11](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D6)
@@ -9,11 +9,9 @@
 
 <!-- Add a clean screenshot here: docs/panel.png -->
 
-A tiny menu‑bar‑style app for Windows that shows how much of your Claude plan you've used, inspired by [CodexBar](https://github.com/steipete/codexbar) (which is macOS‑only). Built with **Rust + Tauri 2**, so it sips RAM (~50 MB) and the binary is ~3.6 MB.
+A Windows tray app that shows how much of your Claude plan you've used, inspired by [CodexBar](https://github.com/steipete/codexbar) (which is macOS‑focused) and maintained as a fork of [Daybi](https://github.com/Daybi)'s original Claude Bar. Built with **Rust + Tauri 2**, so it sips RAM (~50 MB) and the binary is ~3.6 MB.
 
-> A maintained **fork** of the original [Claude Bar by **Daybi**](https://github.com/Daybi) with extra fixes and improvements, by **Alberth Salazar** · open source (MIT).
-
-> 🙏 **All credit for the original app goes to Daybi.** This fork keeps the MIT license and adds the improvements listed [below](#improvements-in-this-fork).
+> **This is a maintained fork of the original Claude Bar by Daybi. All credit for the original app goes to Daybi.** This fork keeps the MIT license and adds the [improvements below](#improvements-in-this-fork). Maintained by Alberth Salazar.
 
 ## Improvements in this fork
 
