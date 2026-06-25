@@ -34,6 +34,8 @@ struct AppState {
     notify: Mutex<NotifyState>,
     /// Si el usuario tiene las notificaciones activadas (toggle en la UI).
     notifications_enabled: AtomicBool,
+    /// Permite distinguir "cerrar ventana" de "salir de la app".
+    allow_exit: AtomicBool,
 }
 
 #[derive(Default)]
@@ -60,6 +62,9 @@ fn get_cost(state: tauri::State<AppState>) -> CostReport {
 
 #[tauri::command]
 fn quit(app: AppHandle) {
+    app.state::<AppState>()
+        .allow_exit
+        .store(true, Ordering::Relaxed);
     app.exit(0);
 }
 
@@ -396,6 +401,7 @@ pub fn run() {
             cost: Mutex::new(CostReport::default()),
             notify: Mutex::new(NotifyState::default()),
             notifications_enabled: AtomicBool::new(true),
+            allow_exit: AtomicBool::new(false),
         })
         .invoke_handler(tauri::generate_handler![
             get_usage,
@@ -454,7 +460,12 @@ pub fn run() {
                             let _ = al.enable();
                         }
                     }
-                    "quit" => app.exit(0),
+                    "quit" => {
+                        app.state::<AppState>()
+                            .allow_exit
+                            .store(true, Ordering::Relaxed);
+                        app.exit(0);
+                    }
                     _ => {}
                 })
                 .on_tray_icon_event(|tray, event| {
@@ -470,20 +481,23 @@ pub fn run() {
                 })
                 .build(app)?;
 
-            // Primer arranque: habilita inicio con Windows y MUESTRA el panel
-            // (centrado) para que el usuario vea que funciona sin buscar el icono.
+            // Siempre muestra el panel al iniciar. Si Windows oculta el icono
+            // de bandeja o el tray falla, el usuario no queda con un proceso
+            // invisible sin forma de recuperar la ventana.
+            if let Some(win) = app.get_webview_window("main") {
+                let _ = win.center();
+                let _ = win.show();
+                let _ = win.set_focus();
+            }
+
+            // Primer arranque: habilita inicio con Windows y notifica al usuario.
             if let Ok(cfg_dir) = app.path().app_config_dir() {
                 let marker = cfg_dir.join(".initialized");
                 if !marker.exists() {
                     let _ = app.autolaunch().enable();
                     let _ = std::fs::create_dir_all(&cfg_dir);
                     let _ = std::fs::write(&marker, b"1");
-                    eprintln!("[claudebar] primer arranque: autostart on + mostrar panel");
-                    if let Some(win) = app.get_webview_window("main") {
-                        let _ = win.center();
-                        let _ = win.show();
-                        let _ = win.set_focus();
-                    }
+                    eprintln!("[claudebar] primer arranque: autostart on");
                     send_notification(
                         app.handle(),
                         "Claude Bar activo",
@@ -504,10 +518,16 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("error al iniciar Claude Bar")
-        .run(|_app, event| {
+        .run(|app, event| {
             // Mantener la app viva aunque la ventana este oculta.
             if let tauri::RunEvent::ExitRequested { api, .. } = event {
-                api.prevent_exit();
+                if !app
+                    .state::<AppState>()
+                    .allow_exit
+                    .load(Ordering::Relaxed)
+                {
+                    api.prevent_exit();
+                }
             }
         });
 }

@@ -24,9 +24,9 @@
         "transparent": true,
         "shadow": true,
         "alwaysOnTop": true,
-        "skipTaskbar": true,
-        "visible": false,
-        "center": false,
+        "skipTaskbar": false,
+        "visible": true,
+        "center": true,
         "windowEffects": {
           "effects": ["acrylic"],
           "state": "active",
