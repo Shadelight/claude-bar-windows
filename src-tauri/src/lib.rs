@@ -7,6 +7,7 @@ mod model;
 mod pricing;
 mod tray_icon;
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
 
@@ -31,6 +32,8 @@ struct AppState {
     cost: Mutex<CostReport>,
     /// Estado previo para detectar transiciones y disparar notificaciones.
     notify: Mutex<NotifyState>,
+    /// Si el usuario tiene las notificaciones activadas (toggle en la UI).
+    notifications_enabled: AtomicBool,
 }
 
 #[derive(Default)]
@@ -64,6 +67,23 @@ fn quit(app: AppHandle) {
 fn hide_panel(app: AppHandle) {
     if let Some(win) = app.get_webview_window("main") {
         let _ = win.hide();
+    }
+}
+
+#[tauri::command]
+fn set_notifications(state: tauri::State<AppState>, enabled: bool) {
+    state.notifications_enabled.store(enabled, Ordering::Relaxed);
+}
+
+#[tauri::command]
+fn open_logs_folder(app: AppHandle) {
+    // Abre la carpeta de la que se calcula el costo (logs locales de Claude Code).
+    if let Some(home) = dirs::home_dir() {
+        let p = home.join(".claude").join("projects");
+        let path = if p.exists() { p } else { home.join(".claude") };
+        let _ = app
+            .opener()
+            .open_path(path.to_string_lossy().to_string(), None::<&str>);
     }
 }
 
@@ -199,6 +219,9 @@ fn check_notifications(app: &AppHandle, snap: &UsageSnapshot) {
         return;
     }
     let state = app.state::<AppState>();
+    if !state.notifications_enabled.load(Ordering::Relaxed) {
+        return;
+    }
     let mut ns = state.notify.lock().unwrap();
     let cur5 = snap.five_hour.resets_at.clone();
     let cur7 = snap.seven_day.resets_at.clone();
@@ -372,13 +395,16 @@ pub fn run() {
             usage: Mutex::new(UsageSnapshot::default()),
             cost: Mutex::new(CostReport::default()),
             notify: Mutex::new(NotifyState::default()),
+            notifications_enabled: AtomicBool::new(true),
         })
         .invoke_handler(tauri::generate_handler![
             get_usage,
             get_cost,
             refresh_now,
             quit,
-            hide_panel
+            hide_panel,
+            set_notifications,
+            open_logs_folder
         ])
         .setup(|app| {
             // --- Menu de la bandeja ---

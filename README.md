@@ -43,9 +43,18 @@ Changes made on top of Daybi's original:
 
 **Requirements:** Windows 10/11 and **Claude Code** installed and logged in (Claude Bar reads your local Claude Code session — see *How it works*).
 
-1. Download the installer `Claude Bar_0.1.0_x64-setup.exe` from [Releases](../../releases).
+1. Download the installer `Claude-Bar-v0.1.0-x64-setup.exe` from [Releases](../../releases).
 2. Run it (installs to your user, no admin needed; SmartScreen may warn for an unsigned app → *More info → Run anyway*).
 3. The panel appears on first run; afterwards it lives in the tray. It can start with Windows (toggle in the tray icon menu).
+
+## Downloads
+
+Build artifacts are attached to [GitHub Releases](../../releases), not committed to the repository.
+
+| Type | File |
+|------|------|
+| Installer | `Claude-Bar-v0.1.0-x64-setup.exe` |
+| Portable | `Claude-Bar-v0.1.0-portable.zip` |
 
 ## How it works
 
@@ -96,12 +105,29 @@ npm run tauri build               # release installer (NSIS) in src-tauri/target
 npm run tauri build --no-bundle   # just the standalone .exe
 ```
 
+Release files should be uploaded to GitHub Releases:
+
+- Installer: rename the NSIS output to `Claude-Bar-v0.1.0-x64-setup.exe`.
+- Portable: zip the standalone exe with `LICENSE` and a short `README.txt` as `Claude-Bar-v0.1.0-portable.zip`.
+
 Structure:
 
 ```
-claudebar/
-├─ index.html · src/main.ts · src/styles.css   # UI (i18n, glass)
-└─ src-tauri/src/
+claude-bar-windows/
+├─ docs/
+│  ├─ panel.png
+│  ├─ compact.png
+│  └─ tray.png
+├─ src/
+├─ src-tauri/
+├─ index.html
+├─ README.md
+├─ LICENSE
+├─ .gitignore
+├─ package.json
+└─ package-lock.json
+
+src-tauri/src/
    ├─ main.rs · lib.rs        # tray, window, polling, notifications
    ├─ credentials.rs          # reads the local token + plan
    ├─ claude_api.rs           # oauth/usage endpoint

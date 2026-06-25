@@ -15,10 +15,10 @@
       {
         "label": "main",
         "title": "Claude Bar",
-        "width": 384,
-        "height": 700,
-        "minWidth": 200,
-        "minHeight": 96,
+        "width": 600,
+        "height": 440,
+        "minWidth": 340,
+        "minHeight": 150,
         "resizable": true,
         "decorations": false,
         "transparent": true,
@@ -31,7 +31,7 @@
           "effects": ["acrylic"],
           "state": "active",
           "radius": 14,
-          "color": [252, 253, 255, 185]
+          "color": [16, 20, 40, 210]
         }
       }
     ],

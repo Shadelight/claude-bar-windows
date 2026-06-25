@@ -49,48 +49,45 @@ fn blend(buf: &mut [u8], x: i32, y: i32, color: [u8; 3], alpha: f32) {
     buf[idx + 3] = (new_a * 255.0) as u8;
 }
 
-/// Rellena un rectangulo redondeado que cubre todo el icono.
-fn fill_rounded(buf: &mut [u8], color: [u8; 3], radius: f32) {
-    let r = radius;
-    let w = SIZE as f32;
-    let h = SIZE as f32;
+/// Circulo relleno centrado, con antialias de 1px.
+fn fill_circle(buf: &mut [u8], color: [u8; 3], alpha: f32, r: f32) {
+    let c = SIZE as f32 / 2.0;
     for y in 0..SIZE {
         for x in 0..SIZE {
-            let fx = x as f32 + 0.5;
-            let fy = y as f32 + 0.5;
-            // distancia a la esquina redondeada mas cercana
-            let dx = if fx < r {
-                r - fx
-            } else if fx > w - r {
-                fx - (w - r)
-            } else {
-                0.0
-            };
-            let dy = if fy < r {
-                r - fy
-            } else if fy > h - r {
-                fy - (h - r)
-            } else {
-                0.0
-            };
+            let dx = x as f32 + 0.5 - c;
+            let dy = y as f32 + 0.5 - c;
             let dist = (dx * dx + dy * dy).sqrt();
-            // antialias de 1px en el borde
-            let cov = (r - dist + 0.5).clamp(0.0, 1.0);
+            let cov = (r - dist + 0.5).clamp(0.0, 1.0) * alpha;
             blend(buf, x as i32, y as i32, color, cov);
         }
     }
 }
 
-/// Color del fondo segun el nivel de uso.
+/// Anillo (borde) centrado de radio `r` y grosor `width`.
+fn stroke_ring(buf: &mut [u8], color: [u8; 3], r: f32, width: f32) {
+    let c = SIZE as f32 / 2.0;
+    let half = width / 2.0;
+    for y in 0..SIZE {
+        for x in 0..SIZE {
+            let dx = x as f32 + 0.5 - c;
+            let dy = y as f32 + 0.5 - c;
+            let dist = (dx * dx + dy * dy).sqrt();
+            let cov = (half - (dist - r).abs() + 0.5).clamp(0.0, 1.0);
+            blend(buf, x as i32, y as i32, color, cov);
+        }
+    }
+}
+
+/// Color del anillo segun el nivel de uso (paleta de la UI).
 fn severity_color(util: f64) -> [u8; 3] {
     if util >= 90.0 {
-        [222, 73, 65] // rojo
+        [248, 113, 113] // rojo
     } else if util >= 70.0 {
-        [230, 145, 56] // naranja (como las barras del repo)
+        [251, 146, 60] // naranja
     } else if util >= 40.0 {
-        [225, 178, 70] // ambar
+        [251, 191, 36] // ambar
     } else {
-        [70, 140, 120] // verde calmado
+        [74, 222, 128] // verde
     }
 }
 
@@ -135,21 +132,19 @@ fn draw_text(buf: &mut [u8], text: &str, font: &FontVec) {
 pub fn render(percent: Option<f64>) -> Image<'static> {
     let mut buf = vec![0u8; (SIZE * SIZE * 4) as usize];
 
-    match percent {
+    let (ring, txt) = match percent {
         Some(p) => {
             let p = p.clamp(0.0, 100.0);
-            fill_rounded(&mut buf, severity_color(p), 7.0);
-            if let Some(f) = font() {
-                draw_text(&mut buf, &format!("{}", p.round() as i64), f);
-            }
+            (severity_color(p), format!("{}", p.round() as i64))
         }
-        None => {
-            // Sin datos: punto gris tenue.
-            fill_rounded(&mut buf, [120, 120, 130], 7.0);
-            if let Some(f) = font() {
-                draw_text(&mut buf, "–", f);
-            }
-        }
+        None => ([130, 130, 140], "–".to_string()),
+    };
+
+    // Centro oscuro translucido + anillo de color + numero en blanco.
+    fill_circle(&mut buf, [20, 24, 38], 0.92, 15.0);
+    stroke_ring(&mut buf, ring, 13.8, 2.4);
+    if let Some(f) = font() {
+        draw_text(&mut buf, &txt, f);
     }
 
     Image::new_owned(buf, SIZE, SIZE)
